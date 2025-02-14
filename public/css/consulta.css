@@ -1,0 +1,120 @@
+/* Estilos gerais */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Alinhar no topo para dispositivos móveis */
+    min-height: 100vh;
+    padding: 20px; /* Adicionar padding para evitar que o conteúdo encoste nas bordas */
+}
+
+.container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 500px;
+    margin: 20px 0; /* Adicionar margem para evitar que o conteúdo fique muito próximo ao topo */
+}
+
+/* Seção de pesquisa */
+.search-section {
+    margin-bottom: 20px;
+}
+
+.search-section h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.search-section form {
+    display: flex;
+    flex-direction: column;
+}
+
+.search-section label {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.search-section input {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px; /* Aumentar o tamanho da fonte para facilitar a leitura */
+}
+
+.search-section button {
+    padding: 12px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px; /* Aumentar o tamanho da fonte do botão */
+}
+
+.search-section button:hover {
+    background-color: #0056b3;
+}
+
+/* Seção de resultados */
+.result-section {
+    margin-top: 20px;
+}
+
+.result-section h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+#result-content {
+    padding: 15px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 16px; /* Aumentar o tamanho da fonte para facilitar a leitura */
+}
+
+#result-content p {
+    margin: 0;
+}
+
+/* Estilos responsivos para telas menores */
+@media (max-width: 600px) {
+    body {
+        padding: 10px; /* Reduzir o padding em telas menores */
+    }
+
+    .container {
+        padding: 15px;
+    }
+
+    .search-section h1 {
+        font-size: 20px; /* Reduzir o tamanho da fonte do título em telas menores */
+    }
+
+    .search-section input {
+        font-size: 14px; /* Reduzir o tamanho da fonte dos inputs em telas menores */
+    }
+
+    .search-section button {
+        font-size: 14px; /* Reduzir o tamanho da fonte do botão em telas menores */
+    }
+
+    .result-section h2 {
+        font-size: 18px; /* Reduzir o tamanho da fonte do subtítulo em telas menores */
+    }
+
+    #result-content {
+        font-size: 14px; /* Reduzir o tamanho da fonte do conteúdo em telas menores */
+    }
+}
