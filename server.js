@@ -1,25 +1,29 @@
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
-const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
 const mysql = require('mysql2');
 const multer = require('multer');
+const bcrypt = require('bcrypt');
 const fs = require('fs');
 
 const app = express();
 const PORT = 3000;
 
-// Configuração do banco de dados
-const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'denny', // Substitua pelo seu usuário do banco de dados
-    password: '123456789', // Substitua pela sua senha do banco de dados
-    database: 'darcksoftware' // Substitua pelo nome do seu banco de dados
+require('dotenv').config();
+
+
+
+// Criar conexão com o banco
+const connection = mysql.createConnection({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT
 });
 
 // Conectar ao banco de dados
-db.connect((err) => {
+connection.connect((err) => {
     if (err) {
         console.error('Erro ao conectar ao banco de dados:', err);
     } else {
@@ -29,175 +33,186 @@ db.connect((err) => {
 
 // Configuração de sessão
 app.use(session({
-    secret: '14112024', // Chave secreta para criptografar a sessão
+    secret: '14112024',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false } // Defina como true se estiver usando HTTPS
+    cookie: { secure: false }  // Para produção, considere usar `secure: true` com HTTPS
 }));
 
-// Inicializar Passport
-app.use(passport.initialize());
-app.use(passport.session());
+// Middleware para servir arquivos estáticos
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
-// Estratégia de autenticação local
-passport.use(new LocalStrategy(
-    (username, password, done) => {
-        db.query('SELECT * FROM atendentes WHERE nome = ?', [username], (err, results) => {
-            if (err) return done(err);
-            if (results.length === 0) return done(null, false, { message: 'Usuário não encontrado.' });
-
-            const user = results[0];
-            if (user.senha !== password) { // Aqui você deve usar bcrypt para comparar senhas em um cenário real
-                return done(null, false, { message: 'Senha incorreta.' });
-            }
-
-            return done(null, user);
-        });
-    }
-));
-
-// Serializar e desserializar o usuário
-passport.serializeUser((user, done) => {
-    done(null, user.id);
-});
-
-passport.deserializeUser((id, done) => {
-    db.query('SELECT * FROM atendentes WHERE id = ?', [id], (err, results) => {
-        if (err) return done(err);
-        done(null, results[0]);
-    });
-});
-
-// Middleware para verificar autenticação
-function ensureAuthenticated(req, res, next) {
-    if (req.isAuthenticated()) {
-        return next();
-    }
-    res.redirect('/login'); // Redireciona para a página de login se não estiver autenticado
-}
-
-// Rota raiz (redireciona para o login)
+// Rota raiz: redireciona sempre para o login
 app.get('/', (req, res) => {
-    res.redirect('/login'); // Redireciona para a página de login
+    res.redirect('/index.html'); // Redireciona diretamente para o index (login)
 });
 
-// Rota de login
-app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+// Rota para a página de login (index.html)
+app.get('/index.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html')); // Serve a página de login
 });
 
-app.post('/login', passport.authenticate('local', {
-    successRedirect: '/index', // Redireciona para o painel index.html após o login
-    failureRedirect: '/login', // Redireciona de volta para o login em caso de falha
-    failureFlash: true // Habilita mensagens de erro
-}));
-
-// Rota de logout
-app.get('/logout', (req, res) => {
-    req.logout();
-    res.redirect('/login');
+// Rota para a página de painel (painel.html) - Redirecionamento após login bem-sucedido
+app.get('/painel.html', (req, res) => {
+    if (!req.session.authenticated) {
+        return res.redirect('/index.html'); // Se não estiver autenticado, vai para o login
+    }
+    res.sendFile(path.join(__dirname, 'public', 'painel.html')); // Serve a página do painel
 });
 
-// Rota para o painel index.html (apenas para atendentes autenticados)
-app.get('/index', ensureAuthenticated, (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// Rota para o painel consultar.html (acesso livre para clientes)
+// Rota para consultar serviços
 app.get('/consultar', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'consultar.html'));
 });
 
-// Middleware para processar dados do formulário
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Verificar e criar o diretório de uploads
+// Configuração do Multer
 const uploadDir = 'uploads/';
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);
 }
 
-// Configuração do multer para salvar o arquivo no servidor
+// Configuração do multer para salvar as imagens
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadDir); // Diretório onde a imagem será salva
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/'); // Pasta onde as imagens serão salvas
     },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + '-' + file.originalname); // Nome do arquivo
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + path.extname(file.originalname)); // Nome do arquivo
     }
 });
 
 const upload = multer({ storage: storage });
 
-app.post('/salvar-servico', upload.single('imagem'), (req, res) => {
-    console.log(req.body);  // Dados do formulário
-    console.log(req.file);  // Dados do arquivo enviado
+// Rota para salvar serviço com duas imagens
+app.post('/salvar-servico', upload.fields([
+    { name: 'imagem1', maxCount: 1 },
+    { name: 'imagem2', maxCount: 1 }
+]), (req, res) => {
+    console.log(req.body, req.files);
 
     const { nome, computador, telefone, endereco, problema, codigo_acompanhamento, status, tecnico, observacoes } = req.body;
-    const imagem = req.file ? req.file.filename : null; // Nome do arquivo salvo
 
+    // Obtém os nomes dos arquivos de imagem
+    const imagem1 = req.files['imagem1'] ? req.files['imagem1'][0].filename : null;
+    const imagem2 = req.files['imagem2'] ? req.files['imagem2'][0].filename : null;
+
+    // Verifica campos obrigatórios
     if (!nome || !computador || !telefone || !endereco || !problema || !codigo_acompanhamento) {
-        console.log('Erro: algum campo não foi preenchido.');
         return res.status(400).json({ error: 'Todos os campos obrigatórios devem ser preenchidos.' });
     }
 
+    // Define valores padrão para status e atendente
+    const statusFinal = status || 'pendente'; // Valor padrão para status
+    const tecnicoFinal = tecnico || null; // Valor padrão para atendente
+
+    // Query SQL corrigida para incluir imagem1 e imagem2
     const query = `
-        INSERT INTO externo (
-            codigo_acompanhamento, nome, computador, telefone, endereco, problema, 
-            status, tecnico, observacoes, imagem
+        INSERT INTO bancada (
+            codigo_acompanhamento, nome_cliente, computador, telefone, endereco, 
+            problema, status, atendente, observacoes, imagem1, imagem2
         ) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    db.query(query, [
+    // Executa a query
+    connection.query(query, [
         codigo_acompanhamento, nome, computador, telefone, endereco, problema,
-        status || 'Em andamento',
-        tecnico || null,
-        observacoes || null,
-        imagem || null
+        statusFinal, tecnicoFinal, observacoes || null, imagem1, imagem2
     ], (err, result) => {
         if (err) {
-            console.error('Erro ao salvar no banco de dados:', err);
-            return res.status(500).json({ error: 'Erro ao salvar o serviço.', details: err.message });
+         //   return res.status(500).json({ error: 'Erro ao salvar o serviço.', details: err.message });
         }
-        console.log('Serviço salvo com sucesso:', result);
-        res.status(201).json({ message: 'Serviço salvo com sucesso!', id: result.insertId });
+        res.status(201).json({ message: 'Serviço salvo com sucesso!' });
+
     });
 });
 
-// Rota para buscar os serviços
 app.get('/servicos', (req, res) => {
     const { codigo_acompanhamento, nome } = req.query;
+    
     let query = `
-        SELECT nome, computador, problema, status, data_prevista, valor_estimado, pecas_utilizadas, imagem
-        FROM externo
-        WHERE 1=1
-    `;
+        SELECT 
+            nome_cliente AS nome, 
+            computador, 
+            problema, 
+            status, 
+            data_prevista, 
+            valor_estimado, 
+            pecas_utilizadas, 
+            TO_BASE64(imagem1) AS imagem_antes, 
+            TO_BASE64(imagem2) AS imagem_depois
+        FROM bancada 
+        WHERE codigo_acompanhamento = ? AND nome_cliente = ?`;
 
-    const params = [];
-
-    if (codigo_acompanhamento) {
-        query += ` AND codigo_acompanhamento = ?`;
-        params.push(codigo_acompanhamento);
-    }
-
-    if (nome) {
-        query += ` AND nome LIKE ?`;
-        params.push(`%${nome}%`);
-    }
-
-    db.query(query, params, (err, results) => {
-        if (err) {
-            return res.status(500).json({ error: 'Erro ao consultar o banco de dados' });
+    connection.query(query, [codigo_acompanhamento, nome], (error, results) => {
+        if (error) {
+            console.error("Erro ao buscar serviço:", error);
+            res.status(500).json({ error: "Erro ao buscar serviço." });
+        } else {
+            res.json(results);
         }
+    });
+});
+
+app.get('/servico', (req, res) => {
+    // Query para buscar todos os serviços com os campos necessários
+    const query = `
+        SELECT 
+            nome_cliente AS nome, 
+            computador, 
+            problema, 
+            status, 
+            data_prevista, 
+            atendente, 
+            observacoes
+        FROM bancada`;
+
+    // Executa a query no banco de dados
+    connection.query(query, (error, results) => {
+        if (error) {
+            console.error("Erro ao buscar serviços:", error);
+            return res.status(500).json({ error: "Erro ao buscar serviços." });
+        }
+
+        // Retorna os resultados em formato JSON
         res.json(results);
     });
 });
 
-// Iniciar o servidor
-app.listen(PORT, () => {
-    console.log(`Servidor rodando em http://localhost:${PORT}`);
+app.post('/login', (req, res) => {
+    const { username, password } = req.body;
+
+    // 1. Busca o usuário no banco de dados
+    const query = `SELECT * FROM empresa WHERE atendente_nome = ?`;
+    connection.query(query, [username], async (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: 'Erro ao autenticar o usuário.', details: err.message });
+        }
+
+        if (results.length > 0) {
+            const user = results[0]; // Obtém o primeiro resultado
+            const hashedPassword = user.atendente_senha; // Senha criptografada no banco de dados
+
+            // 2. Compara a senha fornecida com a senha criptografada
+            const isPasswordValid = await bcrypt.compare(password, hashedPassword);
+            if (isPasswordValid) {
+                // 3. Autenticação bem-sucedida
+                req.session.authenticated = true; // Define a sessão como autenticada
+                req.session.username = username; // Armazena o nome do usuário na sessão
+                return res.json({ message: 'Login bem-sucedido!', redirect: '/painel.html' });
+            } else {
+                // 4. Senha incorreta
+                return res.status(401).json({ error: 'Nome de usuário ou senha incorretos.' });
+            }
+        } else {
+            // 5. Usuário não encontrado
+            return res.status(401).json({ error: 'Nome de usuário ou senha incorretos.' });
+        }
+    });
 });
+
+
+// Iniciar o servidor
+app.listen(PORT, () => console.log(`Servidor rodando em http://localhost:${PORT}`));

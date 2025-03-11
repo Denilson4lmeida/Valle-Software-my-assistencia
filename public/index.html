@@ -1,48 +1,41 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VALLE SOFTWARE - Manutenção de PCs e Notebooks</title>
+    <title>Login</title>
     <link rel="stylesheet" href="css/index.css">
+    <link rel="shortcut icon" href="images/logo.png" type="image/x-icon">
 </head>
 <body>
-    <header>
-        <div class="container">
-            <h1>VALLE Software - Área Técnica</h1>
-            <nav>
-                <ul>
-                    <li><a href="index.html">Início</a></li>
-                    <li><a href="about/about.html">Sobre</a></li>
-                    <li><a href="services.html">Serviços</a></li>
-                    <li><a href="checklist.html">Checklist</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
 
-    <section class="hero">
-        <div class="container">
-            <h2>Área de Manutenção Técnica</h2>
-            <p>Esta área é destinada aos técnicos para registro e acompanhamento de manutenções.</p>
-            <a href="services.html" class="btn">Acessar Serviços</a>
-        </div>
-    </section>
+<div class="login-container">
+    <h1>Entrar</h1>
 
-    <section class="about">
-        <div class="container">
-            <h2>Instruções para Técnicos</h2>
-            <p>Verifique o checklist de manutenção antes de iniciar o serviço. Em caso de dúvidas, consulte a equipe de suporte.</p>
-        </div>
-    </section>
+    <!-- Container para mensagens de erro ou sucesso -->
+    <div id="message-container"></div>
 
-    <footer>
-        <div class="container">
-            <p>&copy; 2024 VALLE Software - Uso Interno</p>
-            <img src="/images/logo.png" alt="Logo da VALLE Software">
-        </div>
-    </footer>
+    <form id="login-form">
+        <label for="username">Usuário:</label>
+        <input type="text" id="username" name="username" required>
 
-    <script src="./scripts/index.js"></script>
+        <label for="password">Senha:</label>
+        <input type="password" id="password" name="password" required>
+
+        <button type="submit">Entrar</button>
+    </form>
+
+    <!-- Mensagem informando sobre a consulta de status -->
+    <p style="margin-top: 20px; font-size: 14px; color: #333;">
+        Para consultar o status da manutenção, basta clicar no botão <strong>"Cliente"</strong> abaixo.
+    </p>
+
+    <!-- Botão Cliente com link funcionando -->
+    <button id="cliente-btn">
+        <a href="consultar.html">Cliente</a>
+    </button>
+</div>
+
+<script src="scripts/index.js"></script>
 </body>
 </html>

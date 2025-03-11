@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Consultar Status</title>
     <link rel="stylesheet" href="css/consulta.css"> <!-- Link para o arquivo CSS -->
+    <link rel="shortcut icon" href="images/logo.png" type="image/x-icon">
 </head>
+
 <body>
     <div class="container">
         <!-- Seção de pesquisa -->
@@ -13,7 +16,8 @@
             <h1>Consultar Status do Serviço</h1>
             <form id="search-form">
                 <label for="codigo_acompanhamento">Código de Acompanhamento:</label>
-                <input type="text" id="codigo_acompanhamento" name="codigo_acompanhamento" maxlength="6" placeholder="Digite o código">
+                <input type="text" id="codigo_acompanhamento" name="codigo_acompanhamento" maxlength="6"
+                    placeholder="Digite o código">
 
                 <label for="nome">Nome do Cliente:</label>
                 <input type="text" id="nome" name="nome" placeholder="Digite o nome">
@@ -35,12 +39,15 @@
         <div class="image-section">
             <h2>Imagens do Serviço</h2>
             <div id="image-content">
-                <!-- Aqui serão exibidas as imagens -->
-                <p>Nenhuma imagem disponível.</p>
+                <!-- As imagens serão inseridas aqui -->
+                <p id="no-images">Nenhuma imagem disponível.</p>
             </div>
         </div>
+
     </div>
+
 
     <script src="scripts/consulta.js"></script> <!-- Link para o arquivo JavaScript -->
 </body>
+
 </html>

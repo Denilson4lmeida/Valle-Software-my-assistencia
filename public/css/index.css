@@ -1,263 +1,137 @@
-/* Reset básico */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
+/* Estilos gerais */
 body {
     font-family: Arial, sans-serif;
-    background-color: #e0e0e0;
-    color: #333;
-    line-height: 1.6;
-    padding: 10px;
-}
-
-/* Container */
-.container {
-    width: 95%;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-/* Cabeçalho */
-header {
-    background: #333;
-    color: #fff;
-    padding: 15px 0;
-    text-align: center;
-}
-
-header h1 {
-    font-size: 1.3em;
-    margin-bottom: 8px;
-}
-
-/* Menu Responsivo */
-nav ul {
-    list-style: none;
+    background-color: #f0f2f5;
+    margin: 0;
     padding: 0;
     display: flex;
     justify-content: center;
-    flex-wrap: wrap;
+    align-items: center;
+    height: 100vh;
 }
 
-nav ul li {
-    margin: 5px;
-}
-
-nav ul li a {
-    color: #fff;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 14px;
-    padding: 8px;
-    border-radius: 5px;
-    transition: background 0.3s;
-}
-
-nav ul li a:hover {
-    background: #555;
-}
-
-/* Seção Hero */
-.hero {
-    background: #555;
-    color: white;
+/* Contêiner do login */
+.login-container {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
     text-align: center;
-    padding: 30px 15px;
-    border-radius: 10px;
+    box-sizing: border-box;
 }
 
-.hero h2 {
-    font-size: 1.5em;
-    margin-bottom: 10px;
-}
-
-.hero p {
-    font-size: 1em;
-    margin-bottom: 15px;
-}
-
-/* Botão */
-.btn {
-    display: inline-block;
-    background: #007bff;
-    color: #fff;
-    padding: 10px 18px;
-    font-size: 1em;
-    text-decoration: none;
-    font-weight: bold;
-    border-radius: 6px;
-    transition: background 0.3s;
-}
-
-.btn:hover {
-    background: #0056b3;
-}
-
-/* Seção Sobre */
-.about {
-    background: #f4f4f4;
-    padding: 20px;
-    text-align: center;
-    border-radius: 10px;
-    margin-top: 20px;
-}
-
-.about h2 {
+/* Título */
+.login-container h1 {
+    margin-bottom: 30px;
+    font-size: 30px;
     color: #333;
-    margin-bottom: 10px;
-    font-size: 1.4em;
+    font-weight: 600;
 }
 
-.about p {
-    max-width: 800px;
-    margin: 0 auto;
-    font-size: 1em;
-    line-height: 1.5;
+/* Mensagens de erro e sucesso */
+#message-container .error-message {
+    color: #dc3545;
+    background-color: #f8d7da;
+    padding: 12px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    font-size: 14px;
 }
 
-/* Rodapé */
-footer {
-    background: #222;
-    color: white;
-    text-align: center;
-    padding: 15px 10px;
-    margin-top: 20px;
-    border-radius: 10px;
+#message-container .success-message {
+    color: #28a745;
+    background-color: #d4edda;
+    padding: 12px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    font-size: 14px;
 }
 
-footer p {
-    font-size: 0.9em;
+/* Formulário de login */
+.login-container label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    text-align: left;
+    color: #333;
+    font-size: 14px;
 }
 
-footer img {
-    margin-top: 10px;
-    width: 80px;
+.login-container input {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+    background-color: #f9f9f9;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.menu-toggle {
-    background: none;
+.login-container input:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+}
+
+/* Botão de login */
+.login-container button[type="submit"] {
+    width: 100%;
+    padding: 15px;
+    background-color: #007bff;
+    color: #fff;
     border: none;
-    font-size: 24px;
+    border-radius: 6px;
+    font-size: 16px;
     cursor: pointer;
-    color: white;
-    display: none;
+    transition: background-color 0.3s ease;
 }
 
-@media (max-width: 768px) {
-    .menu-toggle {
-        display: block;
-    }
-
-    .nav-links {
-        display: none;
-        flex-direction: column;
-        background: #333;
-        position: absolute;
-        top: 60px;
-        right: 10px;
-        width: 150px;
-        border-radius: 5px;
-        text-align: center;
-    }
-
-    .nav-links.active {
-        display: flex;
-    }
-
-    .nav-links li {
-        margin: 10px 0;
-    }
+.login-container button[type="submit"]:hover {
+    background-color: #0056b3;
 }
 
-
-/* Responsividade para telas menores */
-@media (max-width: 768px) {
-    header h1 {
-        font-size: 1.2em;
-    }
-
-    .hero {
-        padding: 25px 10px;
-    }
-
-    .hero h2 {
-        font-size: 1.3em;
-    }
-
-    .hero p {
-        font-size: 0.9em;
-    }
-
-    .btn {
-        font-size: 0.9em;
-        padding: 8px 14px;
-    }
-
-    .about h2 {
-        font-size: 1.2em;
-    }
-
-    .about p {
-        font-size: 0.9em;
-    }
-
-    footer {
-        padding: 12px 10px;
-    }
-
-    footer img {
-        width: 70px;
-    }
+/* Estilo do botão "Cliente" */
+#cliente-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #28a745;
+    color: #fff;
+    text-decoration: none;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.3s ease;
 }
 
-/* Para telas ainda menores (até 480px) */
+#cliente-btn:hover {
+    background-color: #218838;
+}
+
+#cliente-btn a {
+    color: #fff;
+    text-decoration: none;
+}
+
+/* Responsividade */
 @media (max-width: 480px) {
-    header h1 {
-        font-size: 1.1em;
+    .login-container {
+        padding: 25px;
     }
 
-    nav ul {
-        flex-direction: column;
-        text-align: center;
+    .login-container h1 {
+        font-size: 26px;
     }
 
-    nav ul li {
-        margin-bottom: 5px;
+    .login-container input, .login-container button {
+        padding: 12px;
     }
 
-    .hero {
-        padding: 20px 10px;
-    }
-
-    .hero h2 {
-        font-size: 1.2em;
-    }
-
-    .hero p {
-        font-size: 0.85em;
-    }
-
-    .btn {
-        font-size: 0.85em;
-        padding: 7px 12px;
-    }
-
-    .about h2 {
-        font-size: 1.1em;
-    }
-
-    .about p {
-        font-size: 0.85em;
-    }
-
-    footer {
-        padding: 10px;
-    }
-
-    footer img {
-        width: 60px;
+    #cliente-btn {
+        padding: 12px;
     }
 }
