@@ -1,43 +1,46 @@
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
+const MySQLStore = require('express-mysql-session')(session);
 const mysql = require('mysql2');
 const multer = require('multer');
 const bcrypt = require('bcrypt');
 const fs = require('fs');
-
-const app = express();
-const PORT = 3000;
-
 require('dotenv').config();
 
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-
-// Criar conexão com o banco
 const connection = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT
+    host: 'localhost', // ou o IP do seu servidor
+    user: process.env.DB_USER, 
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME
 });
 
 // Conectar ao banco de dados
 connection.connect((err) => {
     if (err) {
-        console.error('Erro ao conectar ao banco de dados:', err);
+        console.error('❌ Erro ao conectar ao banco de dados:', err);
     } else {
-        console.log('Conectado ao banco de dados MySQL.');
+        console.log('✅ Conectado ao banco de dados MySQL.');
     }
 });
 
-// Configuração de sessão
+// Configuração de sessão usando MySQL
+const sessionStore = new MySQLStore({}, connection);
+
 app.use(session({
-    secret: '14112024',
+    secret: process.env.SESSION_SECRET || 'default-secret-key', // Use uma chave secreta definida no ambiente ou uma chave padrão
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false }  // Para produção, considere usar `secure: true` com HTTPS
+    store: sessionStore,
+    cookie: {
+        secure: process.env.NODE_ENV === 'production', // Definido como true em produção, requer HTTPS
+        maxAge: 1000 * 60 * 60 * 24 // Define o tempo de expiração do cookie (1 dia)
+    }
 }));
+
 
 // Middleware para servir arquivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
@@ -73,7 +76,7 @@ if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);
 }
 
-// Configuração do multer para salvar as imagens
+// Configuração do multer para salvar as imagens com validação de tipo de arquivo
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'uploads/'); // Pasta onde as imagens serão salvas
@@ -83,7 +86,20 @@ const storage = multer.diskStorage({
     }
 });
 
-const upload = multer({ storage: storage });
+// Função para verificar o tipo de arquivo
+const fileFilter = (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+
+    if (extname && mimetype) {
+        return cb(null, true);
+    } else {
+        cb('Erro: Arquivo não permitido. Somente imagens .jpeg, .jpg, .png, .gif são permitidas!');
+    }
+};
+
+const upload = multer({ storage: storage, fileFilter: fileFilter });
 
 // Rota para salvar serviço com duas imagens
 app.post('/salvar-servico', upload.fields([
@@ -122,13 +138,13 @@ app.post('/salvar-servico', upload.fields([
         statusFinal, tecnicoFinal, observacoes || null, imagem1, imagem2
     ], (err, result) => {
         if (err) {
-         //   return res.status(500).json({ error: 'Erro ao salvar o serviço.', details: err.message });
+            return res.status(500).json({ error: 'Erro ao salvar o serviço.', details: err.message });
         }
         res.status(201).json({ message: 'Serviço salvo com sucesso!' });
-
     });
 });
 
+// Consulta de serviços
 app.get('/servicos', (req, res) => {
     const { codigo_acompanhamento, nome } = req.query;
     
@@ -156,8 +172,8 @@ app.get('/servicos', (req, res) => {
     });
 });
 
+// Rota para obter todos os serviços
 app.get('/servico', (req, res) => {
-    // Query para buscar todos os serviços com os campos necessários
     const query = `
         SELECT 
             nome_cliente AS nome, 
@@ -169,18 +185,16 @@ app.get('/servico', (req, res) => {
             observacoes
         FROM bancada`;
 
-    // Executa a query no banco de dados
     connection.query(query, (error, results) => {
         if (error) {
             console.error("Erro ao buscar serviços:", error);
             return res.status(500).json({ error: "Erro ao buscar serviços." });
         }
-
-        // Retorna os resultados em formato JSON
         res.json(results);
     });
 });
 
+// Rota de login
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
 
@@ -213,6 +227,7 @@ app.post('/login', (req, res) => {
     });
 });
 
-
-// Iniciar o servidor
-app.listen(PORT, () => console.log(`Servidor rodando em http://localhost:${PORT}`));
+// Inicia o servidor
+app.listen(PORT, () => {
+    console.log(`🚀 Servidor rodando na porta ${PORT}`);
+});
